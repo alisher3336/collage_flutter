@@ -12,9 +12,11 @@ class Title extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
       width: 60,
       height: 60,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.bounceOut,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
         color: switch (hitType) {
@@ -29,9 +31,13 @@ class Title extends StatelessWidget {
   }
 }
 
-class GamePage extends StatelessWidget {
+class GamePage extends StatefulWidget {
   GamePage({super.key});
+  @override
+  State<GamePage> createState() => _GamePageState();
+}
 
+class _GamePageState extends State<GamePage> {
   final Game _game = Game();
 
   @override
@@ -39,16 +45,23 @@ class GamePage extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(8.0),
       child: Column(
-        spacing: 5.0, 
-        children: [for (final guess in _game.guesses) 
-          Row(
-            spacing: 5.0,
-            children: [for (final letter in guess) Title(letter.char, letter.type)]
+        spacing: 5.0,
+        children: [
+          for (final guess in _game.guesses)
+            Row(
+              spacing: 5.0,
+              children: [
+                for (final letter in guess) Title(letter.char, letter.type),
+              ],
+            ),
+          GuessInput(
+            onSubmitGuess: (text) {
+              setState(() {
+                _game.guess(text);
+              });
+            },
           ),
-          GuessInput(onSubmitGuess: (text) {
-            print("ИИСУС: $text");
-          })
-        ]
+        ],
       ),
     );
   }
@@ -68,14 +81,16 @@ class GuessInput extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(8.0),
             child: TextField(
-              maxLength: 5, 
-              decoration: InputDecoration(labelText: "Enter your guess", 
+              maxLength: 5,
+              decoration: InputDecoration(
+                labelText: "Enter your guess",
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8.0))
-                  )
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
                 ),
+              ),
               controller: _textEditingController,
               onSubmitted: (input) {
+                onSubmitGuess(input);
                 _textEditingController.clear();
                 _focusNode.requestFocus();
               },
@@ -105,7 +120,9 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         body: Center(child: GamePage()),
-        appBar: AppBar(title: Align(alignment: Alignment.centerLeft, child: Text("Bridle"))),
+        appBar: AppBar(
+          title: Align(alignment: Alignment.centerLeft, child: Text("Bridle")),
+        ),
       ),
     );
   }
